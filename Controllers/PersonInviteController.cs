@@ -81,6 +81,9 @@ namespace ProjetoChurras.Controllers
             var database = cosmosClient.GetDatabase(databaseId);
             var container = database.GetContainer(containerId);
 
+            // Gere um novo GUID para o ID
+            invite.Id = Guid.NewGuid().ToString();
+
             var response = await container.CreateItemAsync(invite);
 
             return Ok(response.Resource);
