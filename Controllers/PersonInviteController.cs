@@ -19,7 +19,7 @@ namespace ProjetoChurras.Controllers
             this.configuration = configuration;
         }
 
-        [HttpGet]
+        [HttpGet("GetAll")]
         public async Task<ActionResult<IEnumerable<InviteResponse>>> Find()
         {
             string databaseId = "Churras";
@@ -50,22 +50,29 @@ namespace ProjetoChurras.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<InviteResponse>> FindOne(string id)
+        public async Task<ActionResult<InviteResponse>> FindOne(string id, string partitionKey)
         {
-            string databaseId = "Churras";
-            string containerId = "Invite";
+            try
+            {
+                string databaseId = "Churras";
+                string containerId = "Invite";
 
-            string endpointUri = configuration["CosmosDb:EndpointUri"]!;
-            string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
+                string endpointUri = configuration["CosmosDb:EndpointUri"]!;
+                string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
 
-            var cosmosClient = new CosmosClient(endpointUri, primaryKey);
-            var database = cosmosClient.GetDatabase(databaseId);
-            var container = database.GetContainer(containerId);
+                var cosmosClient = new CosmosClient(endpointUri, primaryKey);
+                var database = cosmosClient.GetDatabase(databaseId);
+                var container = database.GetContainer(containerId);
 
-            var partitionKey = new PartitionKey(id);
-            var response = await container.ReadItemAsync<InviteResponse>(id, partitionKey);
+                var partKey = new PartitionKey(partitionKey);
+                var response = await container.ReadItemAsync<InviteResponse>(id, partKey);
 
-            return Ok(response.Resource);
+                return Ok(response.Resource);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpPost]
@@ -90,26 +97,57 @@ namespace ProjetoChurras.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<InviteResponse>> Update(string id, [FromBody] InviteResponse invite)
+        public async Task<ActionResult<InviteResponse>> Update([FromBody] InviteResponse invite)
         {
-            string databaseId = "Churras";
-            string containerId = "Invite";
+            try
+            {
+                string databaseId = "Churras";
+                string containerId = "Invite";
 
-            string endpointUri = configuration["CosmosDb:EndpointUri"]!;
-            string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
+                string endpointUri = configuration["CosmosDb:EndpointUri"]!;
+                string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
 
-            var cosmosClient = new CosmosClient(endpointUri, primaryKey);
-            var database = cosmosClient.GetDatabase(databaseId);
-            var container = database.GetContainer(containerId);
+                var cosmosClient = new CosmosClient(endpointUri, primaryKey);
+                var database = cosmosClient.GetDatabase(databaseId);
+                var container = database.GetContainer(containerId);
 
-            var partitionKey = new PartitionKey(id);
-            var response = await container.ReplaceItemAsync(invite, id, partitionKey);
+                // Verificar a existência do documento
+                var partKey = new PartitionKey(invite.PartitionKey);
+                var existingDocument = await container.ReadItemAsync<InviteResponse>(invite.Id, partKey);
 
-            return Ok(response.Resource);
+                // var sqlQueryText = $"SELECT * FROM Invite c where c.id = '{id}' ";
+                // var queryDefinition = new QueryDefinition(sqlQueryText);
+                // var queryResultSetIterator = container.GetItemQueryIterator<InviteResponse>(queryDefinition);
+                // var result = new InviteResponse();
+
+                // while (queryResultSetIterator.HasMoreResults)
+                // {
+                //     var currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                //     foreach (var document in currentResultSet)
+                //     {
+                //         result = document;
+                //         //result.Add(document);
+                //     }
+                // }
+
+                if (existingDocument == null)
+                {
+                    return NotFound(); // ou outro código de status adequado
+                }
+
+                // Atualizar o documento
+                var response = await container.ReplaceItemAsync(invite, invite.Id);
+
+                return Ok(response.Resource);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> Delete(string id)
+        public async Task<ActionResult> Delete(string id, string partitionKey)
         {
             string databaseId = "Churras";
             string containerId = "Invite";
@@ -121,8 +159,8 @@ namespace ProjetoChurras.Controllers
             var database = cosmosClient.GetDatabase(databaseId);
             var container = database.GetContainer(containerId);
 
-            var partitionKey = new PartitionKey(id);
-            await container.DeleteItemAsync<InviteResponse>(id, partitionKey);
+            var partKey = new PartitionKey(partitionKey);
+            await container.DeleteItemAsync<InviteResponse>(id, partKey);
 
             return NoContent();
         }

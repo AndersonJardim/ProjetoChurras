@@ -10,6 +10,9 @@ namespace ProjetoChurras.Models
     {
         [JsonProperty("id")]
         public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        [JsonProperty("partitionKey")]
+        public string PartitionKey { get; set; } = "InvitePartition";
         public string? Name { get; set; }
         public string? Email { get; set; }
         public DateTime DateCreated { get; set; }
