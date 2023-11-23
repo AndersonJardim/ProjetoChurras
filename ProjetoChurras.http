@@ -1,4 +1,4 @@
-@ProjetoChurras_HostAddress = http://localhost:5041
+@ProjetoChurras_HostAddress = http://localhost:7296
 
 GET {{ProjetoChurras_HostAddress}}/weatherforecast/
 Accept: application/json

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using ProjetoChurras.Models;
+using ProjetoChurras.Repository;
 
 namespace ProjetoChurras.Controllers
 {
@@ -12,25 +13,17 @@ namespace ProjetoChurras.Controllers
     [Route("api/person/invite")]
     public class PersonInviteController : ControllerBase
     {
-        private readonly IConfiguration configuration;
+        private readonly CosmosDB cosmosDB;
 
-        public PersonInviteController(IConfiguration configuration)
+        public PersonInviteController(CosmosDB cosmosDB)
         {
-            this.configuration = configuration;
+            this.cosmosDB = cosmosDB;
         }
 
         [HttpGet("GetAll")]
         public async Task<ActionResult<IEnumerable<InviteResponse>>> Find()
         {
-            string databaseId = "Churras";
-            string containerId = "Invite";
-
-            string endpointUri = configuration["CosmosDb:EndpointUri"]!;
-            string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
-
-            var cosmosClient = new CosmosClient(endpointUri, primaryKey);
-            var database = cosmosClient.GetDatabase(databaseId);
-            var container = database.GetContainer(containerId);
+            var container = cosmosDB.Connection();
 
             var sqlQueryText = "SELECT * FROM c";
             var queryDefinition = new QueryDefinition(sqlQueryText);
@@ -54,15 +47,7 @@ namespace ProjetoChurras.Controllers
         {
             try
             {
-                string databaseId = "Churras";
-                string containerId = "Invite";
-
-                string endpointUri = configuration["CosmosDb:EndpointUri"]!;
-                string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
-
-                var cosmosClient = new CosmosClient(endpointUri, primaryKey);
-                var database = cosmosClient.GetDatabase(databaseId);
-                var container = database.GetContainer(containerId);
+                var container = cosmosDB.Connection();
 
                 var partKey = new PartitionKey(partitionKey);
                 var response = await container.ReadItemAsync<InviteResponse>(id, partKey);
@@ -78,15 +63,7 @@ namespace ProjetoChurras.Controllers
         [HttpPost]
         public async Task<ActionResult<InviteResponse>> Create([FromBody] InviteResponse invite)
         {
-            string databaseId = "Churras";
-            string containerId = "Invite";
-
-            string endpointUri = configuration["CosmosDb:EndpointUri"]!;
-            string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
-
-            var cosmosClient = new CosmosClient(endpointUri, primaryKey);
-            var database = cosmosClient.GetDatabase(databaseId);
-            var container = database.GetContainer(containerId);
+            var container = cosmosDB.Connection();
 
             // Gere um novo GUID para o ID
             invite.Id = Guid.NewGuid().ToString();
@@ -101,34 +78,11 @@ namespace ProjetoChurras.Controllers
         {
             try
             {
-                string databaseId = "Churras";
-                string containerId = "Invite";
-
-                string endpointUri = configuration["CosmosDb:EndpointUri"]!;
-                string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
-
-                var cosmosClient = new CosmosClient(endpointUri, primaryKey);
-                var database = cosmosClient.GetDatabase(databaseId);
-                var container = database.GetContainer(containerId);
+                var container = cosmosDB.Connection();
 
                 // Verificar a existência do documento
                 var partKey = new PartitionKey(invite.PartitionKey);
                 var existingDocument = await container.ReadItemAsync<InviteResponse>(invite.Id, partKey);
-
-                // var sqlQueryText = $"SELECT * FROM Invite c where c.id = '{id}' ";
-                // var queryDefinition = new QueryDefinition(sqlQueryText);
-                // var queryResultSetIterator = container.GetItemQueryIterator<InviteResponse>(queryDefinition);
-                // var result = new InviteResponse();
-
-                // while (queryResultSetIterator.HasMoreResults)
-                // {
-                //     var currentResultSet = await queryResultSetIterator.ReadNextAsync();
-                //     foreach (var document in currentResultSet)
-                //     {
-                //         result = document;
-                //         //result.Add(document);
-                //     }
-                // }
 
                 if (existingDocument == null)
                 {
@@ -149,15 +103,7 @@ namespace ProjetoChurras.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id, string partitionKey)
         {
-            string databaseId = "Churras";
-            string containerId = "Invite";
-
-            string endpointUri = configuration["CosmosDb:EndpointUri"]!;
-            string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
-
-            var cosmosClient = new CosmosClient(endpointUri, primaryKey);
-            var database = cosmosClient.GetDatabase(databaseId);
-            var container = database.GetContainer(containerId);
+            var container = cosmosDB.Connection();
 
             var partKey = new PartitionKey(partitionKey);
             await container.DeleteItemAsync<InviteResponse>(id, partKey);

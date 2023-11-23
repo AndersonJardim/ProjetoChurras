@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using ProjetoChurras.Extensions;
+using ProjetoChurras.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ builder.Configuration.AddDataBase();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddTransient<CosmosDB>();
 
 var app = builder.Build();
 
