@@ -23,23 +23,15 @@ namespace ProjetoChurras.Controllers
         [HttpGet("GetAll")]
         public async Task<ActionResult<IEnumerable<InviteResponse>>> Find()
         {
-            var container = cosmosDB.Connection();
-
-            var sqlQueryText = "SELECT * FROM c";
-            var queryDefinition = new QueryDefinition(sqlQueryText);
-            var queryResultSetIterator = container.GetItemQueryIterator<InviteResponse>(queryDefinition);
-            var result = new List<InviteResponse>();
-
-            while (queryResultSetIterator.HasMoreResults)
+            try
             {
-                var currentResultSet = await queryResultSetIterator.ReadNextAsync();
-                foreach (var document in currentResultSet)
-                {
-                    result.Add(document);
-                }
+                var result = await cosmosDB.FindAll();
+                return Ok(result);
             }
-
-            return Ok(result);
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
 
         [HttpGet("{id}")]
@@ -47,11 +39,7 @@ namespace ProjetoChurras.Controllers
         {
             try
             {
-                var container = cosmosDB.Connection();
-
-                var partKey = new PartitionKey(partitionKey);
-                var response = await container.ReadItemAsync<InviteResponse>(id, partKey);
-
+                var response = await cosmosDB.FindOne(id, partitionKey);
                 return Ok(response.Resource);
             }
             catch (Exception e)
@@ -63,36 +51,28 @@ namespace ProjetoChurras.Controllers
         [HttpPost]
         public async Task<ActionResult<InviteResponse>> Create([FromBody] InviteResponse invite)
         {
-            var container = cosmosDB.Connection();
-
-            // Gere um novo GUID para o ID
-            invite.Id = Guid.NewGuid().ToString();
-
-            var response = await container.CreateItemAsync(invite);
-
-            return Ok(response.Resource);
+            try
+            {
+                var response = await cosmosDB.Create(invite);
+                return Ok(response.Resource);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
+
 
         [HttpPut("{id}")]
         public async Task<ActionResult<InviteResponse>> Update([FromBody] InviteResponse invite)
         {
             try
             {
-                var container = cosmosDB.Connection();
-
-                // Verificar a existência do documento
-                var partKey = new PartitionKey(invite.PartitionKey);
-                var existingDocument = await container.ReadItemAsync<InviteResponse>(invite.Id, partKey);
-
-                if (existingDocument == null)
-                {
-                    return NotFound(); // ou outro código de status adequado
-                }
-
-                // Atualizar o documento
-                var response = await container.ReplaceItemAsync(invite, invite.Id);
-
-                return Ok(response.Resource);
+                var response = await cosmosDB.Update(invite);
+                if (response)
+                    return Ok(response);
+                else
+                    return BadRequest();
             }
             catch (Exception e)
             {
@@ -103,12 +83,16 @@ namespace ProjetoChurras.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(string id, string partitionKey)
         {
-            var container = cosmosDB.Connection();
+            try
+            {
+                await cosmosDB.Delete(id, partitionKey);
 
-            var partKey = new PartitionKey(partitionKey);
-            await container.DeleteItemAsync<InviteResponse>(id, partKey);
-
-            return NoContent();
+                return NoContent();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.Message);
+            }
         }
     }
 }
