@@ -20,7 +20,7 @@ namespace ProjetoChurras.Controllers
             this.cosmosDB = cosmosDB;
         }
 
-        [HttpGet("GetAll")]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<InvitesResponse>>> Find()
         {
             try
