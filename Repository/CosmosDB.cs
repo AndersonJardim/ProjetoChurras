@@ -19,7 +19,7 @@ namespace ProjetoChurras.Repository
         public Container Connection()
         {
             string databaseId = "Churras";
-            string containerId = "Invite";
+            string containerId = "Invites";
 
             string endpointUri = configuration["CosmosDb:EndpointUri"]!;
             string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
@@ -30,14 +30,14 @@ namespace ProjetoChurras.Repository
             return container;
         }
 
-        public async Task<List<InviteResponse>> FindAll()
+        public async Task<List<InvitesResponse>> FindAll()
         {
             var container = Connection();
 
             var sqlQueryText = "SELECT * FROM c";
             var queryDefinition = new QueryDefinition(sqlQueryText);
-            var queryResultSetIterator = container.GetItemQueryIterator<InviteResponse>(queryDefinition);
-            var result = new List<InviteResponse>();
+            var queryResultSetIterator = container.GetItemQueryIterator<InvitesResponse>(queryDefinition);
+            var result = new List<InvitesResponse>();
 
             while (queryResultSetIterator.HasMoreResults)
             {
@@ -51,16 +51,16 @@ namespace ProjetoChurras.Repository
             return result;
         }
 
-        public async Task<ItemResponse<InviteResponse>> FindOne(string id, string partitionKey)
+        public async Task<ItemResponse<InvitesResponse>> FindOne(string id, string partitionKey)
         {
             var container = Connection();
 
             var partKey = new PartitionKey(partitionKey);
-            var response = await container.ReadItemAsync<InviteResponse>(id, partKey);
+            var response = await container.ReadItemAsync<InvitesResponse>(id, partKey);
             return response;
         }
 
-        public async Task<ItemResponse<InviteResponse>> Create(InviteResponse invite)
+        public async Task<ItemResponse<InvitesResponse>> Create(InvitesResponse invite)
         {
             var container = Connection();
 
@@ -71,13 +71,13 @@ namespace ProjetoChurras.Repository
             return response;
         }
 
-        public async Task<bool> Update(InviteResponse invite)
+        public async Task<bool> Update(InvitesResponse invite)
         {
             var container = Connection();
 
             // Verificar a existência do documento
             var partKey = new PartitionKey(invite.PartitionKey);
-            var existingDocument = await container.ReadItemAsync<InviteResponse>(invite.Id, partKey);
+            var existingDocument = await container.ReadItemAsync<InvitesResponse>(invite.Id, partKey);
 
             if (existingDocument == null)
             {
@@ -95,7 +95,7 @@ namespace ProjetoChurras.Repository
             var container = Connection();
 
             var partKey = new PartitionKey(partitionKey);
-            await container.DeleteItemAsync<InviteResponse>(id, partKey);
+            await container.DeleteItemAsync<InvitesResponse>(id, partKey);
         }
 
     }

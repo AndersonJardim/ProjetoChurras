@@ -10,18 +10,18 @@ using ProjetoChurras.Repository;
 namespace ProjetoChurras.Controllers
 {
     [ApiController]
-    [Route("api/person/invite")]
-    public class PersonInviteController : ControllerBase
+    [Route("api/person/invites")]
+    public class PersonInvitesController : ControllerBase
     {
         private readonly CosmosDB cosmosDB;
 
-        public PersonInviteController(CosmosDB cosmosDB)
+        public PersonInvitesController(CosmosDB cosmosDB)
         {
             this.cosmosDB = cosmosDB;
         }
 
         [HttpGet("GetAll")]
-        public async Task<ActionResult<IEnumerable<InviteResponse>>> Find()
+        public async Task<ActionResult<IEnumerable<InvitesResponse>>> Find()
         {
             try
             {
@@ -35,7 +35,7 @@ namespace ProjetoChurras.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<InviteResponse>> FindOne(string id, string partitionKey)
+        public async Task<ActionResult<InvitesResponse>> FindOne(string id, string partitionKey)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace ProjetoChurras.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<InviteResponse>> Create([FromBody] InviteResponse invite)
+        public async Task<ActionResult<InvitesResponse>> Create([FromBody] InvitesResponse invite)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace ProjetoChurras.Controllers
 
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<InviteResponse>> Update([FromBody] InviteResponse invite)
+        public async Task<ActionResult<InvitesResponse>> Update([FromBody] InvitesResponse invite)
         {
             try
             {

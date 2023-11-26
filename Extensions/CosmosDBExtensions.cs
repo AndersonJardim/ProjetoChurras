@@ -21,7 +21,7 @@ namespace ProjetoChurras.Extensions
             // Obtém o banco de dados e o contêiner
             var database = await cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
 
-            AddDataBaseContainer(database, "Invite");
+            AddDataBaseContainer(database, "Invites");
             AddDataBaseContainer(database, "Person");
         }
 
