@@ -1,25 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using ProjetoChurras.Models;
 
 namespace ProjetoChurras.Repository
 {
-    public class CosmosDB
+    public class ChurrasRepository
     {
         private readonly IConfiguration configuration;
 
-        public CosmosDB(IConfiguration configuration)
+        public ChurrasRepository(IConfiguration configuration)
         {
             this.configuration = configuration;
         }
 
-        public Container Connection()
+        private Container Connection()
         {
             string databaseId = "Churras";
-            string containerId = "Invites";
+            string containerId = "Bbq";
 
             string endpointUri = configuration["CosmosDb:EndpointUri"]!;
             string primaryKey = configuration["CosmosDb:PrimaryKey"]!;
@@ -30,14 +26,22 @@ namespace ProjetoChurras.Repository
             return container;
         }
 
-        public async Task<List<InvitesResponse>> FindAll()
+        public async Task<ItemResponse<ChurrasModel>> Create(ChurrasModel churras)
+        {
+            var container = Connection();
+            churras.Id = Guid.NewGuid().ToString();
+            var response = await container.CreateItemAsync(churras);
+            return response;
+        }
+
+        public async Task<List<ChurrasModel>> FindAll()
         {
             var container = Connection();
 
             var sqlQueryText = "SELECT * FROM c";
             var queryDefinition = new QueryDefinition(sqlQueryText);
-            var queryResultSetIterator = container.GetItemQueryIterator<InvitesResponse>(queryDefinition);
-            var result = new List<InvitesResponse>();
+            var queryResultSetIterator = container.GetItemQueryIterator<ChurrasModel>(queryDefinition);
+            var result = new List<ChurrasModel>();
 
             while (queryResultSetIterator.HasMoreResults)
             {
@@ -51,33 +55,13 @@ namespace ProjetoChurras.Repository
             return result;
         }
 
-        public async Task<ItemResponse<InvitesResponse>> FindOne(string id, string partitionKey)
-        {
-            var container = Connection();
-
-            var partKey = new PartitionKey(partitionKey);
-            var response = await container.ReadItemAsync<InvitesResponse>(id, partKey);
-            return response;
-        }
-
-        public async Task<ItemResponse<InvitesResponse>> Create(InvitesResponse invite)
-        {
-            var container = Connection();
-
-            // Gere um novo GUID para o ID
-            invite.Id = Guid.NewGuid().ToString();
-
-            var response = await container.CreateItemAsync(invite);
-            return response;
-        }
-
-        public async Task<bool> Update(InvitesResponse invite)
+        public async Task<bool> Update(ChurrasModel invite)
         {
             var container = Connection();
 
             // Verificar a existência do documento
             var partKey = new PartitionKey(invite.PartitionKey);
-            var existingDocument = await container.ReadItemAsync<InvitesResponse>(invite.Id, partKey);
+            var existingDocument = await container.ReadItemAsync<ChurrasModel>(invite.Id, partKey);
 
             if (existingDocument == null)
             {
@@ -89,14 +73,5 @@ namespace ProjetoChurras.Repository
 
             return true;
         }
-
-        public async Task Delete(string id, string partitionKey)
-        {
-            var container = Connection();
-
-            var partKey = new PartitionKey(partitionKey);
-            await container.DeleteItemAsync<InvitesResponse>(id, partKey);
-        }
-
     }
 }

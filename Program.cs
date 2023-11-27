@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using ProjetoChurras.Extensions;
 using ProjetoChurras.Repository;
 
@@ -12,7 +11,9 @@ builder.Configuration.AddDataBase();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-builder.Services.AddTransient<CosmosDB>();
+builder.Services.AddTransient<BaseRepository>();
+builder.Services.AddTransient<InviteRepository>();
+builder.Services.AddTransient<ChurrasRepository>();
 
 var app = builder.Build();
 
@@ -20,7 +21,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.DefaultModelsExpandDepth(-1));
 }
 
 app.UseHttpsRedirection();

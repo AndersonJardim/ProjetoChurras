@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 
 namespace ProjetoChurras.Extensions
@@ -22,7 +18,7 @@ namespace ProjetoChurras.Extensions
             var database = await cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
 
             AddDataBaseContainer(database, "Invites");
-            AddDataBaseContainer(database, "Person");
+            AddDataBaseContainer(database, "Bbq");
         }
 
         private static async void AddDataBaseContainer(Database database, string containerId)
