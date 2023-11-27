@@ -11,7 +11,6 @@ namespace ProjetoChurras.Models
         [System.Text.Json.Serialization.JsonIgnore]
         public string PartitionKey { get; set; } = "ChurrasPartition";
 
-        public string Name { get; set; }
         public string? Reason { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime DateBbq { get; set; }
